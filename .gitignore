@@ -4,5 +4,4 @@ gen
 bin/*
 *.bak
 *.tmp
-.classpath
-.settings/
+/bin
