@@ -1,0 +1,8 @@
+##ignore files by jhy 20140608##
+.svn
+gen
+bin/*
+*.bak
+*.tmp
+.classpath
+.settings/
