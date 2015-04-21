@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">GetYunosJvmVersion</string>
+    <string name="hello_world">Hello world!</string>
+    
+    <string name="judge">判断虚拟机的版本</string>
+    <string name="start">开始</string>
+    
+    <string name="chmod_data">datachmod</string>
+    
+
+
+</resources>
