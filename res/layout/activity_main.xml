@@ -1,0 +1,105 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="${packageName}.${activityClass}" >
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/judge" />
+
+    <Button
+        android:id="@+id/button_start"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView1"
+        android:text="@string/start" />
+
+    <TextView
+        android:id="@+id/textView_judge"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/button_start"
+        android:layout_marginTop="31dp"
+        android:text="" />
+
+    <Button
+        android:id="@+id/button_chmod"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textView_judge"
+        android:layout_toRightOf="@+id/button_start"
+        android:text="@string/chmod_data" />
+
+    <Button
+        android:id="@+id/button_static"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_chmod"
+        android:layout_toRightOf="@+id/button_chmod"
+        android:text="STATICIP" />
+    
+    
+    <Button
+        android:id="@+id/button_install"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_static"
+        android:layout_toRightOf="@+id/button_static"
+        android:text="显式INSTALL" />
+    
+    
+    <Button
+        android:id="@+id/button_install_cmd_slient"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_install"
+        android:layout_toRightOf="@+id/button_install"
+        android:text="CMDINSTALL" />
+
+    
+    <Button
+        android:id="@+id/button_appstore"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_install_cmd_slient"
+        android:layout_toRightOf="@+id/button_install_cmd_slient"
+        android:text="URL应用中心" />
+    
+    
+    <Button
+        android:id="@+id/button_resourceids"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_appstore"
+        android:layout_toRightOf="@+id/button_appstore"
+        android:text="ID查询调用" />
+    
+     <Button
+        android:id="@+id/button_injecttest"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBottom="@+id/button_resourceids"
+        android:layout_toRightOf="@+id/button_resourceids"
+        android:text="注入测试" />
+        
+     <Button
+        android:id="@+id/button_jni"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_below="@+id/textView_judge"
+        android:text="jni" />
+     
+     
+     <Button
+        android:id="@+id/button_jni_runtime"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/button_jni"
+        android:layout_alignBottom="@+id/button_jni"
+        android:text="jni_runtime" />
+</RelativeLayout>
