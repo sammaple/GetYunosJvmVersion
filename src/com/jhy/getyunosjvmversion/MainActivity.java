@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.IPackageInstallObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -50,6 +51,8 @@ public class MainActivity extends Activity implements OnClickListener {
 	Button bt, button_static,bt_install,bt_button_install_cmd_slient,button_appstore,button_resourceids;
 	Button button_injecttest,button_jni,button_jni_runtime;
 	TextView tx;
+	
+	ScreenSaveOffReceiver mScreenSaveOffReceiver;
 
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
 			"java.vm.vendor", "java.vm.specification.name",
@@ -125,9 +128,21 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_jni_runtime.setOnClickListener(this);
 		
 
+		//IntentFilter intentFilter6 = new IntentFilter();
+
+		//intentFilter6.addAction("ACTION_SCREEN_SAVER");
+		//mScreenSaveOffReceiver = new ScreenSaveOffReceiver();
+		//registerReceiver(mScreenSaveOffReceiver, intentFilter6);
+
 		
 	}
 
+	@Override
+	protected void onDestroy() {
+		// TODO Auto-generated method stub
+		//unregisterReceiver(mScreenSaveOffReceiver);
+		super.onDestroy();
+	}
 	@Override
 	public void onClick(View arg0) {
 		if (arg0.getId() == R.id.button_start) {
