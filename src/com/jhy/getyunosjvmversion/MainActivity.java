@@ -11,20 +11,24 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
-import java.util.logging.Logger;
 
+
+import dalvik.system.DexClassLoader;
+import dalvik.system.PathClassLoader;
 import android.app.Activity;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.IPackageInstallObserver;
+import android.content.pm.ActivityInfo;
+//import android.content.pm.IPackageInstallObserver;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.media.MediaPlayer;
 import android.net.ConnectivityManager;
@@ -35,7 +39,6 @@ import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.view.View;
@@ -47,9 +50,9 @@ import android.widget.Toast;
 public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
-	private static final String TAG = "InjectActivity";
+	private static final String TAG = "MainActivity";
 	Button bt, button_static,bt_install,bt_button_install_cmd_slient,button_appstore,button_resourceids;
-	Button button_injecttest,button_jni,button_jni_runtime;
+	Button button_injecttest,button_jni,button_jni_runtime,button_inject_screentime;
 	TextView tx;
 	
 	ScreenSaveOffReceiver mScreenSaveOffReceiver;
@@ -62,6 +65,8 @@ public class MainActivity extends Activity implements OnClickListener {
 			"java.vendor", "ro.yunos.version",
 
 			"lemur.vm.version" };
+	private WifiManager mWifiManager;
+	private IntentFilter mIntentFilter;
 	
 	 /*private static int sA = 1;  
 	    public static void setA(int a) {  
@@ -115,6 +120,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		
 		button_jni = (Button) findViewById(R.id.button_jni);
 		button_jni_runtime =  (Button) findViewById(R.id.button_jni_runtime);
+		
+		button_inject_screentime = (Button) findViewById(R.id.button_inject_screentime);
 
 		bt.setOnClickListener(this);
 		button_static.setOnClickListener(this);
@@ -126,7 +133,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_injecttest.setOnClickListener(this);
 		button_jni.setOnClickListener(this);
 		button_jni_runtime.setOnClickListener(this);
-		
+
+		button_inject_screentime.setOnClickListener(this);
 
 		//IntentFilter intentFilter6 = new IntentFilter();
 
@@ -134,13 +142,70 @@ public class MainActivity extends Activity implements OnClickListener {
 		//mScreenSaveOffReceiver = new ScreenSaveOffReceiver();
 		//registerReceiver(mScreenSaveOffReceiver, intentFilter6);
 
+        mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        mIntentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
 		
 	}
+	
 
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (WifiManager.WIFI_STATE_CHANGED_ACTION.equals(action)) {
+                handleWifiStateChanged(intent.getIntExtra(
+                        WifiManager.EXTRA_WIFI_STATE,
+                        WifiManager.WIFI_STATE_UNKNOWN));
+            } 
+        }
+    };
+    
+    private void handleWifiStateChanged(int state) {
+        switch (state) {
+            case WifiManager.WIFI_STATE_ENABLING:                      
+            	Log.i("xxx",""+"WIFI_STATE_ENABLING"); 
+                break;
+            case WifiManager.WIFI_STATE_ENABLED:           
+            	Log.i("xxx",""+"WIFI_STATE_ENABLED"); 
+            	WifiInfo wifiInfo = mWifiManager.getConnectionInfo();   
+                String wifiMAC = wifiInfo.getMacAddress();                                  
+            	Log.i("xxx",""+wifiMAC); 
+
+            	tx.setText(tx.getText()+wifiMAC);
+            	tx.setText(tx.getText()+","+wifiInfo.toString());
+            	
+				//Log.i("xxx","getConnectionInfo error");       
+				//tx.setText(tx.getText()+",getConnectionInfo error!");       
+				mWifiManager.setWifiEnabled(false);
+				
+                break;
+            case WifiManager.WIFI_STATE_DISABLING:   
+            	Log.i("xxx",""+"WIFI_STATE_DISABLING"); 
+                break;
+            case WifiManager.WIFI_STATE_DISABLED:
+            	Log.i("xxx",""+"WIFI_STATE_DISABLED"); 
+                break;
+            default:
+            	Log.i("xxx","default:"+state); 
+                break;
+        }
+    }
+    
+    
+
+	@Override
+	protected void onResume() {
+		// TODO Auto-generated method stub
+
+        registerReceiver(mReceiver, mIntentFilter);
+        
+		super.onResume();
+	}
 	@Override
 	protected void onDestroy() {
 		// TODO Auto-generated method stub
 		//unregisterReceiver(mScreenSaveOffReceiver);
+        unregisterReceiver(mReceiver);
 		super.onDestroy();
 	}
 	@Override
@@ -185,9 +250,10 @@ public class MainActivity extends Activity implements OnClickListener {
 	            	isopend = true;
 			 }else{
 
-				 wifiManager.setWifiEnabled(true);
+				 wifiManager.setWifiEnabled(true);                             
+	            	Log.i("xxx",""+"setWifiEnabled"); 
 			 }
-            WifiInfo wifiInfo = wifiManager.getConnectionInfo();                                                  
+            /*WifiInfo wifiInfo = wifiManager.getConnectionInfo();                                                  
             if (wifiInfo == null) {                                                                        
             	Log.i("xxx","getConnectionInfo error");       
             	tx.setText(tx.getText()+",getConnectionInfo error!");                                                                      
@@ -198,11 +264,11 @@ public class MainActivity extends Activity implements OnClickListener {
 
             	tx.setText(tx.getText()+wifiMAC);
             	tx.setText(tx.getText()+","+wifiInfo.toString());
-            }
-            if(!isopend){
+            }*/
+            /*if(!isopend){
 
    			 wifiManager.setWifiEnabled(false);
-            }
+            }*/
 			
 		}else if (arg0.getId() == R.id.button_install) {
 			//install_usepackagemanager();
@@ -296,6 +362,47 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		      
 		      
+		}else if(arg0.getId() == R.id.button_inject_screentime){
+			
+
+			Object service = ServiceManager.getServiceBinderByNative("power");
+
+			Class<?> powerManagerService;
+			try {
+				
+				powerManagerService = Class
+						.forName("com.android.server.power.PowerManagerService");
+				/*Field f = statusBarManager.getDeclaredField("mLastUserActivityTime");
+				f.setAccessible(true);
+				f.set(service, 250000);*/
+				
+				Log.i("TTT", "powerManagerService.getDeclaringClass():" + powerManagerService.getDeclaringClass());//com.android.server.power.PowerManagerService
+				Log.i("TTT", "service.getDeclaringClass():" + service.getClass());//android.os.BinderProxy 
+				
+				Field f = powerManagerService.getDeclaredField("mScreenOffTimeoutSetting");
+				f.setAccessible(true);
+				
+				Log.i("TTT", "f.getDeclaringClass():" + f.getDeclaringClass());//com.android.server.power.PowerManagerService
+				Log.i("TTT", "f.getName():" + f.getName());
+				
+				
+				int i = ((Integer) f.getInt(service))-250000;//it's bindproxy,no use,errror
+				f.set(service,i);
+				
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchFieldException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}else if(arg0.getId() == R.id.button_jni){
 			Log.i("TTT", "z1:" + getA());  
             //setA(getA() + 1);  
@@ -303,12 +410,15 @@ public class MainActivity extends Activity implements OnClickListener {
 			Log.i("TTT ", "z2:" + getA());  
 		}else if(arg0.getId() == R.id.button_jni_runtime){
 			
+			
+			
+			useDexClassLoader();
+			
 
-			Class<?> a = null;
+			/*Class<?> a = null;
 			try {
 				a = Class.forName("android.os.JHY_JNITest");
 			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 
@@ -345,11 +455,138 @@ public class MainActivity extends Activity implements OnClickListener {
 			} catch (InstantiationException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
-			}
+			}*/
 			
 		}
 
 	}
+	
+	public void useDexClassLoader(){  
+        Intent intent = new Intent();  
+        intent.setPackage("com.cloudmedia.yunos.launcher");  
+        PackageManager pm = this.getPackageManager();  
+        final List<ResolveInfo> plugins = pm.queryIntentActivities(intent,0);  
+        if(plugins.size() <= 0){  
+            Log.i(TAG, "resolve info size is:" + plugins.size());  
+            return;  
+        }  
+        ResolveInfo resolveInfo = plugins.get(0);  
+        ActivityInfo activityInfo = resolveInfo.activityInfo;  
+          
+        String div = System.getProperty("path.separator");  
+        String packageName = activityInfo.packageName;  
+        String dexPath = activityInfo.applicationInfo.sourceDir;  
+        //目标类所在的apk或者jar的路径，class loader会通过这个路径来加载目标类文件  
+        String dexOutputDir = this.getApplicationInfo().dataDir;  
+        //由于dex文件是包含在apk或者jar文件中的,所以在加载class之前就需要先将dex文件解压出来，dexOutputDir为解压路径  
+        String libPath = activityInfo.applicationInfo.nativeLibraryDir; 
+        
+        Log.i(TAG, "div:" + div + "   " +   
+                    "packageName:" + packageName + "   " +  
+                    "dexPath:" + dexPath + "   " +  
+                    "dexOutputDir:" + dexOutputDir + "   " +  
+                    "libPath:" + libPath);  
+        
+        //create context
+        Context c;
+		try {
+			c = createPackageContext(packageName, Context.CONTEXT_INCLUDE_CODE | Context.CONTEXT_IGNORE_SECURITY);
+	        //载入这个类
+	        Class clazz_0 = c.getClassLoader().loadClass(packageName + ".MainActivity");
+	        Field f_0 = clazz_0.getDeclaredField("ConfigManagerService");
+	        f_0.setAccessible(true);
+			Object o_0= f_0.get(null);
+
+			Log.i("yunbo 0", "o_0 is : " + o_0);
+		} catch (NameNotFoundException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+      
+        //path loader
+        PathClassLoader pathClassLoader = new dalvik.system.PathClassLoader(
+        		dexPath,
+                ClassLoader.getSystemClassLoader());
+        
+
+        try {
+            Class<?> handler = Class.forName(packageName + ".MainActivity", true, pathClassLoader);
+
+            Field f_1 = handler.getDeclaredField("LAUNCHER_CODE");
+			f_1.setAccessible(true);
+			Object o_1 = f_1.get(null);
+
+			Log.i("yunbo 1", "o_1 is : " + o_1);
+            
+            Field f = handler.getDeclaredField("ConfigManagerService");
+			f.setAccessible(true);
+			Object o = f.get(null);
+
+			Log.i("yunbo 1", "o is : " + o);
+			if(o != null){
+
+				Log.i("yunbo 1", "o.getDeclaringClass() : " + o.getClass());
+			}
+        } catch (ClassNotFoundException e) {
+            // catch this
+        } catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalAccessException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
+          //dex loader
+        DexClassLoader dcLoader = new DexClassLoader(dexPath,dexOutputDir,libPath,this.getClass().getClassLoader());  
+        try {  
+            /*Class<?> clazz = dcLoader.loadClass(packageName + ".MainActivity");*///能找到 class 但是不是系统加载的activity
+        	
+        	/*Class<?> clazz =  Class.forName(packageName + ".MainActivity", true, dcLoader);*/ //能找到 class 但是不是系统加载的activity
+
+            Log.i(TAG, "getSystemClassLoader"+ClassLoader.getSystemClassLoader());  
+            
+			Class<?> clazz =  ClassLoader.getSystemClassLoader().loadClass(packageName + ".MainActivity");//根本找不到
+			
+			
+        	
+			Field f = clazz.getDeclaredField("ConfigManagerService");
+			f.setAccessible(true);
+			Object o = f.get(null);
+
+			Log.i("yunbo", "o is : " + o);
+			if(o != null){
+
+				Log.i("yunbo", "o.getDeclaringClass() : " + o.getClass());
+			}
+			
+        } catch (ClassNotFoundException e) {  
+            Log.i(TAG, "ClassNotFoundException");  
+        } catch (IllegalAccessException e) {  
+            Log.i(TAG, "IllegalAccessException");  
+        }  catch (IllegalArgumentException e) {  
+            Log.i(TAG, "IllegalArgumentException");  
+        }catch (NoSuchFieldException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}  
+    } 
 	
 	
 	void injectService(){
@@ -589,7 +826,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	}
 	
 	
-	public void Install(String fileName,String packageName)//  
+	/*public void Install(String fileName,String packageName)//  
 	   {  
 	      
 	    Uri uri = Uri.fromFile(new File(fileName));  
@@ -612,7 +849,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	       public void packageInstalled(String packageName, int returnCode) {//如果returnCode == 1就为成功  
 	             //give me file
 	       }  
-	   };  
+	   };  */
 	   
 	public void execArrayCommand(String[] command) throws IOException {
 		Runtime runtime = Runtime.getRuntime();
