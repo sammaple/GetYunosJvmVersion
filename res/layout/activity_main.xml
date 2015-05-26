@@ -111,4 +111,13 @@
         android:layout_toRightOf="@+id/button_jni_runtime"
         android:layout_alignBottom="@+id/button_jni_runtime"
         android:text="inject_screentime" />
+     
+     
+     <Button
+        android:id="@+id/button_jni_uuid"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_toRightOf="@+id/button_inject_screentime"
+        android:layout_alignBottom="@+id/button_inject_screentime"
+        android:text="jni_uuid" />
 </RelativeLayout>

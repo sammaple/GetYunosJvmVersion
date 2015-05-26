@@ -51,8 +51,9 @@ public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
 	private static final String TAG = "MainActivity";
+	protected static final int UUIDP = 1;
 	Button bt, button_static,bt_install,bt_button_install_cmd_slient,button_appstore,button_resourceids;
-	Button button_injecttest,button_jni,button_jni_runtime,button_inject_screentime;
+	Button button_injecttest,button_jni,button_jni_runtime,button_inject_screentime,jni_uuid;
 	TextView tx;
 	
 	ScreenSaveOffReceiver mScreenSaveOffReceiver;
@@ -78,10 +79,13 @@ public class MainActivity extends Activity implements OnClickListener {
 	  static{
 
 			System.loadLibrary("inso");
+			System.loadLibrary("tvsettingsecjni");//加载系统/system/lib中的so
+			System.loadLibrary("uuidprivate");
 	  }
 
 	public native void setA(int i);
     public native int getA();
+    public static native String getuuid(String paramString);
 	
 	class Test extends Thread{
 
@@ -122,6 +126,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_jni_runtime =  (Button) findViewById(R.id.button_jni_runtime);
 		
 		button_inject_screentime = (Button) findViewById(R.id.button_inject_screentime);
+		jni_uuid = (Button) findViewById(R.id.button_jni_uuid);
 
 		bt.setOnClickListener(this);
 		button_static.setOnClickListener(this);
@@ -135,6 +140,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_jni_runtime.setOnClickListener(this);
 
 		button_inject_screentime.setOnClickListener(this);
+		jni_uuid.setOnClickListener(this);
 
 		//IntentFilter intentFilter6 = new IntentFilter();
 
@@ -408,9 +414,28 @@ public class MainActivity extends Activity implements OnClickListener {
             //setA(getA() + 1);  
 			setA(2);  
 			Log.i("TTT ", "z2:" + getA());  
+		}else if(arg0.getId() == R.id.button_jni_uuid){
+			String uuid = null;
+			try {
+				uuid = execSCommand("getprop|grep clouduuid");
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			if(uuid == null){
+
+				Log.i("TTT", "uuid is null" );  
+				getUUIDInfo("uuid为空");
+				
+			}else{
+				String[] uuids = uuid.split(":");
+				uuid = uuids[1].trim().replace("[", "").replace("]", "");
+				Log.i("TTT", "uuid is :"+uuid );  
+				getUUIDInfo(uuid);
+			}
+			
 		}else if(arg0.getId() == R.id.button_jni_runtime){
-			
-			
 			
 			useDexClassLoader();
 			
@@ -460,6 +485,29 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 
 	}
+	
+	  private void getUUIDInfo(String uuid)
+	  {
+	    try
+	    {
+	      String str = getuuid(uuid);
+	      Log.i("TTT","uuid:" + uuid);
+	      if (str == null)
+	      {
+	    	  Log.i("TTT","get uuid info error from the uuid background server!");
+	        return;
+	      }
+	      Message localMessage = mhadler.obtainMessage();
+	      localMessage.what = UUIDP;
+	      localMessage.obj = str;
+	      this.mhadler.sendMessage(localMessage);
+	      return;
+	    }
+	    catch (Exception localException)
+	    {
+	    	Log.i("TTT","Exception:", localException);
+	    }
+	  }
 	
 	public void useDexClassLoader(){  
         Intent intent = new Intent();  
@@ -793,6 +841,9 @@ public class MainActivity extends Activity implements OnClickListener {
 			case THREAD:
 				tx.setText((String) msg.obj);
 				break;
+			case UUIDP:
+				tx.setText((String) msg.obj);
+				break;
 			}
 			super.handleMessage(msg);
 		}
@@ -927,6 +978,48 @@ public class MainActivity extends Activity implements OnClickListener {
 			System.err.println(e);
 
 		}
+
+	}
+	
+	public String execSCommand(String command) throws IOException {
+		Runtime runtime = Runtime.getRuntime();
+
+		Process proc = runtime.exec(new String[] {"sh", "-c",command});
+
+		try {
+
+			if (proc.waitFor() != 0) {
+
+				System.err.println("exit value = " + proc.exitValue());
+				return null;
+
+			} else {
+
+				BufferedReader reader = new BufferedReader(
+						new InputStreamReader(proc.getInputStream()));
+				int read;
+				char[] buffer = new char[4096];
+				StringBuffer output = new StringBuffer();
+				while ((read = reader.read(buffer)) > 0) {
+					output.append(buffer, 0, read);
+				}
+				reader.close();
+
+				// Waits for the command to finish.
+				// process.waitFor();
+
+				System.out.println(output.toString());
+				return output.toString();
+				//Message m = mhadler.obtainMessage(THREAD, output.toString());
+				//m.sendToTarget();
+			}
+
+		} catch (InterruptedException e) {
+
+			System.err.println(e);
+
+		}
+		return null;
 
 	}
 
