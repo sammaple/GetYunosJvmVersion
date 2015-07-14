@@ -16,13 +16,23 @@ import java.util.Properties;
 import java.util.UUID;
 
 
+
+
+
+
+
+
+import com.jhy.getyunosjvmversion.aidl.IGetVersionService;
+
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.pm.ActivityInfo;
 //import android.content.pm.IPackageInstallObserver;
 import android.content.pm.PackageInfo;
@@ -36,10 +46,13 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -53,7 +66,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	private static final String TAG = "MainActivity";
 	protected static final int UUIDP = 1;
 	Button bt, button_static,bt_install,bt_button_install_cmd_slient,button_appstore,button_resourceids;
-	Button button_injecttest,button_jni,button_jni_runtime,button_inject_screentime,jni_uuid;
+	Button button_injecttest,button_jni,button_jni_runtime,button_inject_screentime,jni_uuid,button_svc_version;
 	TextView tx;
 	
 	ScreenSaveOffReceiver mScreenSaveOffReceiver;
@@ -82,6 +95,24 @@ public class MainActivity extends Activity implements OnClickListener {
 			System.loadLibrary("tvsettingsecjni");//加载系统/system/lib中的so
 			System.loadLibrary("uuidprivate");
 	  }
+	  
+	  //uuidprivate 如何编写
+//	  #include <stdio.h>   
+//	  #include "include/uuid.h" 
+//	  #include <jni.h>
+//	  #include <android/log.h>
+//	    
+//
+//	  #define  LOG_TAG    "JNI_JHY"
+//	  #define  LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+//	  #define  LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+//
+//
+//	  JNIEXPORT jstring JNICALL Java_com_jhy_getyunosjvmversion_MainActivity_getuuid(JNIEnv * env,
+//	                                                                         jobject thiz,jstring uuid)  {
+//	                                                                         	
+//	  	return Java_com_yunos_tv_devicemanager_DeveloperModeMain_getUUIDActiveTimestamp(env,thiz,uuid);
+//	  }
 
 	public native void setA(int i);
     public native int getA();
@@ -105,6 +136,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		}
 		
 	}
+	
+	 IGetVersionService myService = null; 
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -127,6 +160,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		
 		button_inject_screentime = (Button) findViewById(R.id.button_inject_screentime);
 		jni_uuid = (Button) findViewById(R.id.button_jni_uuid);
+		
+		
+		button_svc_version = (Button) findViewById(R.id.button_svc_version);
 
 		bt.setOnClickListener(this);
 		button_static.setOnClickListener(this);
@@ -141,6 +177,7 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		button_inject_screentime.setOnClickListener(this);
 		jni_uuid.setOnClickListener(this);
+		button_svc_version.setOnClickListener(this);
 
 		//IntentFilter intentFilter6 = new IntentFilter();
 
@@ -150,10 +187,31 @@ public class MainActivity extends Activity implements OnClickListener {
 
         mWifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         mIntentFilter = new IntentFilter(WifiManager.WIFI_STATE_CHANGED_ACTION);
+        
+       
+        
+
 		
 	}
 	
+    ServiceConnection  conn = new 	ServiceConnection() {
+		
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			// TODO Auto-generated method stub
+			myService = null;
+		}
+		
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			// TODO Auto-generated method stub
 
+			Log.d("jvm","onServiceConnected");
+			myService = IGetVersionService.Stub.asInterface(service);
+
+		}
+	};
+	
     private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -182,7 +240,7 @@ public class MainActivity extends Activity implements OnClickListener {
             	
 				//Log.i("xxx","getConnectionInfo error");       
 				//tx.setText(tx.getText()+",getConnectionInfo error!");       
-				mWifiManager.setWifiEnabled(false);
+				//mWifiManager.setWifiEnabled(false);
 				
                 break;
             case WifiManager.WIFI_STATE_DISABLING:   
@@ -437,6 +495,20 @@ public class MainActivity extends Activity implements OnClickListener {
 				getUUIDInfo(uuid);
 			}
 			
+		}else if(arg0.getId() == R.id.button_svc_version){
+
+			Log.d("jvm","button_svc_version:"+myService);
+			if(myService != null){
+				try {
+					Toast.makeText(this, "myService "+myService.getVersion(), 5000).show();
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} 
+			}else{
+
+		        bindService(new Intent("com.jhy.getyunosjvmversion.aidl.GetVersionService.action"), conn, Context.BIND_AUTO_CREATE);
+			}
 		}else if(arg0.getId() == R.id.button_jni_runtime){
 			
 			useDexClassLoader();
