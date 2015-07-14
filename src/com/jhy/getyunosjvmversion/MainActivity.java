@@ -300,7 +300,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		}else if (arg0.getId() == R.id.button_install_cmd_slient) {
 			//install_usepackagemanager();
 			try {
-				execArrayCommand(new String[]{"sh","-c","pm install /mnt/sdcard/tmp.apk"});
+				//execArrayCommand(new String[]{"sh","-c","pm install /mnt/sdcard/tmp.apk"});
+
+				execArrayCommand(new String[]{"sh","-c","pm block xxx"});
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
