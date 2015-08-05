@@ -129,4 +129,13 @@
          android:layout_centerVertical="true"
          android:text="service_version" />
 
+     <Button
+         android:id="@+id/button_lowthread"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignParentLeft="true"
+         android:layout_below="@+id/button_jni"
+         android:layout_marginTop="106dp"
+         android:text="空间阈值" />
+
 </RelativeLayout>

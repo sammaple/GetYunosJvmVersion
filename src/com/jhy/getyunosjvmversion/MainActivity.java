@@ -22,11 +22,19 @@ import java.util.UUID;
 
 
 
+
+
+
+
+
+
+
 import com.jhy.getyunosjvmversion.aidl.IGetVersionService;
 
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 import android.app.Activity;
+import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -53,6 +61,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
+import android.os.storage.StorageManager;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -67,6 +76,7 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected static final int UUIDP = 1;
 	Button bt, button_static,bt_install,bt_button_install_cmd_slient,button_appstore,button_resourceids;
 	Button button_injecttest,button_jni,button_jni_runtime,button_inject_screentime,jni_uuid,button_svc_version;
+	Button button_lowthread;
 	TextView tx;
 	
 	ScreenSaveOffReceiver mScreenSaveOffReceiver;
@@ -163,6 +173,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		
 		
 		button_svc_version = (Button) findViewById(R.id.button_svc_version);
+		button_lowthread = (Button) findViewById(R.id.button_lowthread);
 
 		bt.setOnClickListener(this);
 		button_static.setOnClickListener(this);
@@ -178,6 +189,7 @@ public class MainActivity extends Activity implements OnClickListener {
 		button_inject_screentime.setOnClickListener(this);
 		jni_uuid.setOnClickListener(this);
 		button_svc_version.setOnClickListener(this);
+		button_lowthread.setOnClickListener(this);
 
 		//IntentFilter intentFilter6 = new IntentFilter();
 
@@ -509,6 +521,39 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		        bindService(new Intent("com.jhy.getyunosjvmversion.aidl.GetVersionService.action"), conn, Context.BIND_AUTO_CREATE);
 			}
+		}else if(arg0.getId() == R.id.button_lowthread){
+			Class<?> sm;
+			try {
+				sm = Class.forName("android.os.storage.StorageManager");
+				Method low = sm.getMethod("getStorageLowBytes",new Class<?>[]{File.class});
+				low.setAccessible(true);
+				
+				StorageManager service = (StorageManager) getSystemService(STORAGE_SERVICE);
+				File DATA_PATH = Environment.getDataDirectory();
+				Object thread = low.invoke(service,new Object[]{DATA_PATH});
+				long low_ = ((Long)thread) / (1024*1024);
+
+				Toast.makeText(this, "low thread "+low_+"MB", 5000).show();
+				
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (NoSuchMethodException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IllegalArgumentException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (InvocationTargetException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+			
 		}else if(arg0.getId() == R.id.button_jni_runtime){
 			
 			useDexClassLoader();
