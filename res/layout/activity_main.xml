@@ -138,4 +138,22 @@
          android:layout_marginTop="106dp"
          android:text="空间阈值" />
 
+     <Button
+         android:id="@+id/button_test"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignBaseline="@+id/button_lowthread"
+         android:layout_alignBottom="@+id/button_lowthread"
+         android:layout_toRightOf="@+id/button_lowthread"
+         android:text="测试专用" />
+     
+      <Button
+         android:id="@+id/button_tcp_Server"
+         android:layout_width="wrap_content"
+         android:layout_height="wrap_content"
+         android:layout_alignBaseline="@+id/button_test"
+         android:layout_alignBottom="@+id/button_lowthread"
+         android:layout_toRightOf="@+id/button_test"
+         android:text="tcpserver" />
+
 </RelativeLayout>

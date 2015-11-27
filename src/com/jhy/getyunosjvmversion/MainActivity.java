@@ -10,31 +10,14 @@ import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.InetSocketAddress;
+import java.nio.channels.SocketChannel;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 import java.util.UUID;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import com.jhy.getyunosjvmversion.aidl.IGetVersionService;
-
-import dalvik.system.DexClassLoader;
-import dalvik.system.PathClassLoader;
 import android.app.Activity;
-import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -54,7 +37,6 @@ import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.Binder;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -69,6 +51,11 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.jhy.getyunosjvmversion.aidl.IGetVersionService;
+
+import dalvik.system.DexClassLoader;
+import dalvik.system.PathClassLoader;
+
 public class MainActivity extends Activity implements OnClickListener {
 
 	protected static final int THREAD = 0;
@@ -76,11 +63,11 @@ public class MainActivity extends Activity implements OnClickListener {
 	protected static final int UUIDP = 1;
 	Button bt, button_static,bt_install,bt_button_install_cmd_slient,button_appstore,button_resourceids;
 	Button button_injecttest,button_jni,button_jni_runtime,button_inject_screentime,jni_uuid,button_svc_version;
-	Button button_lowthread;
+	Button button_lowthread,button_test,button_tcp_Server;
 	TextView tx;
+
 	
 	ScreenSaveOffReceiver mScreenSaveOffReceiver;
-
 	String[] vm_property = { "java.vm.name", "java.vm.specification.vendor",
 			"java.vm.vendor", "java.vm.specification.name",
 
@@ -135,6 +122,7 @@ public class MainActivity extends Activity implements OnClickListener {
 			// TODO Auto-generated method stub
 			super.run();
 			Log.d("xxxx", "new threadin!");
+
 			while(true){
 				try {
 					Thread.sleep(3000);
@@ -174,6 +162,8 @@ public class MainActivity extends Activity implements OnClickListener {
 		
 		button_svc_version = (Button) findViewById(R.id.button_svc_version);
 		button_lowthread = (Button) findViewById(R.id.button_lowthread);
+		button_test = (Button) findViewById(R.id.button_test);
+		button_tcp_Server = (Button) findViewById(R.id.button_tcp_Server);
 
 		bt.setOnClickListener(this);
 		button_static.setOnClickListener(this);
@@ -190,6 +180,9 @@ public class MainActivity extends Activity implements OnClickListener {
 		jni_uuid.setOnClickListener(this);
 		button_svc_version.setOnClickListener(this);
 		button_lowthread.setOnClickListener(this);
+		button_test.setOnClickListener(this);
+		
+		button_tcp_Server.setOnClickListener(this);
 
 		//IntentFilter intentFilter6 = new IntentFilter();
 
@@ -554,6 +547,19 @@ public class MainActivity extends Activity implements OnClickListener {
 			
 			
 			
+		}else if(arg0.getId() == R.id.button_test){
+			
+			String ret;
+			 Util.exec_grep("setprop persist.sys.yunos.recovery start");
+				/*ret = Util.exec_grep("ll /data");
+				Log.d("jhy",ret);
+				ret = Util.exec_grep("ll /cache");
+				Log.d("jhy",ret);
+				ret = Util.exec_grep("cp /cache/recovery/* /cache");
+				Log.d("jhy",ret);
+				ret = Util.exec_grep("touch /cache/recovery/1.zip");
+				Log.d("jhy",ret);*/
+			
 		}else if(arg0.getId() == R.id.button_jni_runtime){
 			
 			useDexClassLoader();
@@ -601,9 +607,14 @@ public class MainActivity extends Activity implements OnClickListener {
 				e.printStackTrace();
 			}*/
 			
+		}else if(arg0.getId() == R.id.button_tcp_Server){
+			
+			Intent i = new Intent(this, Tcp.class);
+			startActivity(i);
 		}
 
 	}
+
 	
 	  private void getUUIDInfo(String uuid)
 	  {
@@ -1109,8 +1120,8 @@ public class MainActivity extends Activity implements OnClickListener {
 
 			if (proc.waitFor() != 0) {
 
-				System.err.println("exit value = " + proc.exitValue());
-				return null;
+				Log.d("jhy","exit value = " + proc.exitValue());
+				return "";
 
 			} else {
 
@@ -1127,7 +1138,7 @@ public class MainActivity extends Activity implements OnClickListener {
 				// Waits for the command to finish.
 				// process.waitFor();
 
-				System.out.println(output.toString());
+				Log.d("jhy",output.toString());
 				return output.toString();
 				//Message m = mhadler.obtainMessage(THREAD, output.toString());
 				//m.sendToTarget();
@@ -1135,10 +1146,10 @@ public class MainActivity extends Activity implements OnClickListener {
 
 		} catch (InterruptedException e) {
 
-			System.err.println(e);
+			Log.d("jhy",e.toString());
 
 		}
-		return null;
+		return "";
 
 	}
 
